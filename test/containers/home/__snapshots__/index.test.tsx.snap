@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Home component should render successfully 1`] = `
+<div
+  className="sc-bdVaJa fDpJja"
+>
+  <div
+    className="sc-bdVaJa PqXEI"
+  >
+    <span>
+      HOME
+    </span>
+  </div>
+</div>
+`;
