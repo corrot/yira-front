@@ -3,9 +3,17 @@ import { useTranslation } from 'react-i18next';
 
 import Button from '@/components/library/button';
 import { HeaderStyled } from './header-styled';
+import { logoutAction } from '@/store/ducks/user/user.actions';
+import { useDispatch } from 'react-redux';
 
-export const Header: FC<IOwnProps> = ({ changeTheme }) => {
+export const Header: FC<IOwnProps> = ({ changeTheme, isAuthenticated }) => {
 	const { i18n } = useTranslation();
+
+	const dispatch = useDispatch();
+
+	const handleLogout = () => {
+		dispatch(logoutAction());
+	};
 
 	return (
 		<HeaderStyled>
@@ -18,6 +26,7 @@ export const Header: FC<IOwnProps> = ({ changeTheme }) => {
 				<Button active={i18n.language === 'ka'} onClick={() => i18n.changeLanguage('ka')}>
 					KA
 				</Button>
+				{isAuthenticated && <Button onClick={handleLogout}>Log out</Button>}
 			</div>
 		</HeaderStyled>
 	);
@@ -25,6 +34,7 @@ export const Header: FC<IOwnProps> = ({ changeTheme }) => {
 
 interface IOwnProps {
 	changeTheme: () => void;
+	isAuthenticated: boolean;
 }
 
 export default memo(Header);

@@ -4,11 +4,13 @@ import { combineReducers } from '@reduxjs/toolkit';
 
 import app from './app';
 import toast from './toast';
+import user from './user';
 
 const rootReducer = (history: History) =>
 	combineReducers({
 		router: connectRouter(history),
 		app: app.reducer,
+		user: user.reducer,
 		toast: toast.reducer
 	});
 

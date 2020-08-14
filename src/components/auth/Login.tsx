@@ -4,6 +4,9 @@ import Api from '@/services/api';
 import { IAuthProps } from '@/services/api/user';
 import { withRouter } from 'react-router';
 import { ICommonProps } from '@/types/models/common';
+import { Link } from 'react-router-dom';
+import { loginAction } from '@/store/ducks/user/user.actions';
+import { useDispatch } from 'react-redux';
 
 const Login = ({ history }: ICommonProps) => {
 	const initialValues = { email: '', password: '' };
@@ -27,15 +30,21 @@ const Login = ({ history }: ICommonProps) => {
 		return !errors.email && !errors.password;
 	};
 
+	const dispatch = useDispatch();
+
 	const onSubmit = (values: IAuthProps) => {
 		setIsSubmitting(true);
-		Api.user
-			.authenticateUser(values)
-			.then(() => history.push('/'))
-			.catch(err => console.log(err.message))
-			.finally(() => {
-				setIsSubmitting(false);
-			});
+		dispatch(loginAction(values));
+		// Api.user
+		// 	.authenticateUser(values)
+		// 	.then(res => {
+		// 		localStorage.setItem('authToken', res.data.token);
+		// 		history.push('/');
+		// 	})
+		// 	.catch(err => console.log(err.message))
+		// 	.finally(() => {
+		// 		setIsSubmitting(false);
+		// 	});
 	};
 
 	return (
@@ -57,6 +66,7 @@ const Login = ({ history }: ICommonProps) => {
 					</button>
 				</Form>
 			</Formik>
+			Don't have an account? <Link to="/register">Register</Link>
 		</div>
 	);
 };

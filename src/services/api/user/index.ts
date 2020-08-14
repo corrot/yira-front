@@ -16,6 +16,9 @@ export interface IRegisterProps {
 export default {
 	getUsers: () => get<IUser[]>('users'),
 	authenticateUser: ({ email, password }: IAuthProps) => post<IAuthProps>('/auth', { identifier: email, password }),
+	logout: () => {
+		localStorage.removeItem('authToken');
+	},
 	registerUser: ({ email, password, repeatPassword }: IRegisterProps) =>
 		post<IRegisterProps>('/register', { identifier: email, password, repeatPassword })
 };

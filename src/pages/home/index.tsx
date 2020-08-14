@@ -9,24 +9,6 @@ export const Home = () => {
 	const { t } = useTranslation();
 	const [users] = useApi(Api.user.getUsers);
 
-	const handleLogin = () => {
-		try {
-			const data = Api.user.authenticateUser();
-			console.log(data);
-		} catch (err) {
-			console.log(err);
-		}
-	};
-
-	const handleRegistration = () => {
-		try {
-			const data = Api.user.registerUser();
-			console.log(data);
-		} catch (err) {
-			console.log(err);
-		}
-	};
-
 	return (
 		<>
 			<Flex center>
@@ -39,12 +21,6 @@ export const Home = () => {
 					))}
 				</Flex>
 			</Flex>
-			<button type="button" onClick={handleLogin}>
-				login
-			</button>
-			<button type="button" onClick={handleRegistration}>
-				register
-			</button>
 		</>
 	);
 };

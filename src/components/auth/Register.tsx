@@ -4,6 +4,7 @@ import Api from '@/services/api';
 import { IRegisterProps } from '@/services/api/user';
 import { withRouter } from 'react-router';
 import { ICommonProps } from '@/types/models/common';
+import { Link } from 'react-router-dom';
 
 const Register = ({ history }: ICommonProps) => {
 	const initialValues = { email: '', password: '', repeatPassword: '' };
@@ -67,6 +68,7 @@ const Register = ({ history }: ICommonProps) => {
 					</button>
 				</Form>
 			</Formik>
+			Already have an account? <Link to="/login">Login</Link>
 		</div>
 	);
 };
