@@ -1,20 +1,10 @@
 import { get, post } from '../axios';
 
 import { IUser } from '@/types/models/user';
-
-export interface IAuthProps {
-	email: string;
-	password: string;
-}
-
-export interface IRegisterProps {
-	email: string;
-	password: string;
-	repeatPassword: string;
-}
+import { IAuthProps, IRegisterProps } from '@/store/ducks/user/user.types';
 
 export default {
-	getUsers: () => get<IUser[]>('users'),
+	// getUsers: () => get<IUser[]>('users'),
 	authenticateUser: ({ email, password }: IAuthProps) => post<IAuthProps>('/auth', { identifier: email, password }),
 	logout: () => {
 		localStorage.removeItem('authToken');

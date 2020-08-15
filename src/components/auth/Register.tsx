@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import Api from '@/services/api';
-import { IRegisterProps } from '@/services/api/user';
 import { withRouter } from 'react-router';
 import { ICommonProps } from '@/types/models/common';
 import { Link } from 'react-router-dom';
+import { IRegisterProps } from '@/store/ducks/user/user.types';
 
 const Register = ({ history }: ICommonProps) => {
 	const initialValues = { email: '', password: '', repeatPassword: '' };
@@ -48,7 +48,7 @@ const Register = ({ history }: ICommonProps) => {
 	return (
 		<div>
 			<h1>Register to Yira</h1>
-			<Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
+			<Formik initialValues={initialValues} validate={() => validate} onSubmit={onSubmit}>
 				<Form>
 					<div>
 						<Field type="email" name="email" />

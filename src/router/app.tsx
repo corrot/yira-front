@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { hot } from 'react-hot-loader/root';
 import { useSelector } from 'react-redux';
 import { Route } from 'react-router-dom';
@@ -13,7 +13,7 @@ import ToastContainer from '@/components/toast';
 import useActions from '@/hooks/useActions';
 import { appSelectors, appActions } from '@/store/ducks/app';
 
-import { routes, AsyncPage, IRoute } from './routes';
+import { routes, AsyncPage, IRoute, PublicRoute, PrivateRoute } from './routes';
 import Login from '@/components/auth/Login';
 import Register from '@/components/auth/Register';
 import { userSelector } from '@/store/ducks/user';
@@ -28,7 +28,7 @@ const App = () => {
 		themeSwitch(themeToSwitch);
 	}, [theme, themeSwitch]);
 
-	const isAuthenticated = useSelector(userSelector.isUserLoggenIn);
+	const isAuthenticated = useSelector(userSelector.isAuthenticated);
 
 	return (
 		<ThemeProvider theme={activeTheme}>
@@ -38,15 +38,17 @@ const App = () => {
 				<Container>
 					<Header changeTheme={changeTheme} isAuthenticated={isAuthenticated} />
 					<Switch>
-						{isAuthenticated ? <Redirect to="/" /> : <Route path="/login" component={Login} />}
-						{isAuthenticated ? <Redirect to="/" /> : <Route path="/register" component={Register} />}
-						{routes.map((r: IRoute) =>
-							!isAuthenticated ? (
-								<Redirect to="/login" />
-							) : (
-								<Route key={r.path} path={r.path} exact={r.exact} component={r.component} />
-							)
-						)}
+						<PublicRoute path="/login" component={Login} appProps={{ isAuthenticated }} />
+						<PublicRoute path="/register" component={Register} appProps={{ isAuthenticated }} />
+						{routes.map((r: IRoute) => (
+							<PrivateRoute
+								key={r.path}
+								path={r.path}
+								exact={r.exact}
+								component={r.component}
+								appProps={{ isAuthenticated }}
+							/>
+						))}
 						<Route component={() => <AsyncPage page="not-found" />} />
 					</Switch>
 				</Container>

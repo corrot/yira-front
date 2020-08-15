@@ -2,12 +2,14 @@ import { createSlice, createSelector } from '@reduxjs/toolkit';
 
 import { IRootStore } from '@/store/ducks/root-reducer';
 
-import { IUserState, ILoginAction } from './user.types';
+import { IUserState } from './user.types';
 import * as actions from './user.actions';
+import storage from '@/utils/storage';
 
 const initialState: IUserState = {
 	authToken: null,
-	loginFailed: false
+	loginFailed: false,
+	userId: ''
 };
 
 // slice
@@ -15,9 +17,12 @@ const slice = createSlice({
 	name: 'user',
 	initialState,
 	reducers: {
-		login: (state, action: ILoginAction) => ({ ...state, authToken: action.payload.token }),
+		login: (state, action) => ({ ...state, authToken: action.payload.token }),
 		logout: state => ({ ...state, authToken: null }),
-		loginFailed: state => ({ ...state, loginFailed: true })
+		loginFailed: (state, action) => {
+			console.log(action.payload);
+			return { ...state, loginFailed: true };
+		}
 	}
 });
 
@@ -27,9 +32,15 @@ export const userSelector = {
 		(state: IRootStore) => state.user,
 		user => user.authToken
 	),
-	isUserLoggenIn: createSelector(
+	userId: createSelector(
 		(state: IRootStore) => state.user,
-		user => !!user.authToken
+		user => user.userId
+	),
+	isAuthenticated: createSelector(
+		(state: IRootStore) => state.user,
+		user => {
+			return !!user.authToken || !!storage('authToken').get();
+		}
 	)
 };
 
