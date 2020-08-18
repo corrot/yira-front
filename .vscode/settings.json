@@ -20,5 +20,6 @@
   "typescript.tsdk": "node_modules\\typescript\\lib",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": false
-  }
+  },
+  "jira-plugin.workingProject": ""
 }

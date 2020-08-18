@@ -1,13 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Api from '@/services/api';
 import { Flex } from '@/styled/flex';
 import useApi from '@/hooks/useApi';
+import { useSelector, useDispatch } from 'react-redux';
+import { tasksSelector, tasksAction } from '@/store/ducks/tasks';
+
+import Table from '@/components/library/table';
+import Modal from '@/components/library/modal';
+import TaskForm from './components/TaskForm';
+import { subMilliseconds } from 'date-fns';
+import { StylesProvider } from '@material-ui/core';
 
 export const Home = () => {
 	const { t } = useTranslation();
-	const [tasks] = useApi(Api.tasks.getTasks);
+	// const [tasks] = useApi(Api.tasks.getTasks);
+	const _tasks = useSelector(tasksSelector.tasks);
 
 	const newTask = {
 		id: 1,
@@ -26,37 +35,38 @@ export const Home = () => {
 		description: "<div style='font-weight: bold'>This is a sample description</div>"
 	};
 
+	const dispatch = useDispatch();
+
 	const createTask = props => {
-		return useApi(Api.tasks.createTask(props));
+		dispatch(tasksAction.createTaskAction(props));
 	};
 	const updateTask = props => {
-		return useApi(Api.tasks.updateTask(props));
+		dispatch(tasksAction.updateTaskAction(props));
 	};
 	const deleteTask = props => {
-		return useApi(Api.tasks.deleteTask(props));
+		dispatch(tasksAction.deleteTaskAction(props));
 	};
+
+	useEffect(() => {
+		dispatch(tasksAction.getTasksAction());
+	}, []);
+
+	const headers = [
+		{ selector: 'id', title: '#' },
+		{ selector: 'title', title: 'Title' },
+		{ selector: 'dueDate', title: 'Due Date' },
+		{ selector: 'createDate', title: 'Creation Date' },
+		{ selector: 'isResolved', title: 'Status' },
+		{ selector: 'description', title: 'Description' }
+	];
+
+	const renderModalBody = () => <TaskForm submitAction={createTask} />;
 
 	return (
 		<>
-			<Flex center>
-				<Flex center sm={6} xs={8} padding="1rem">
-					<span>{t('Main page')}</span>
-				</Flex>
-				<Flex direction="column" center sm={6} xs={8} padding="1rem">
-					{tasks.map(t => (
-						<div key={t.id}>{t.title}</div>
-					))}
-				</Flex>
-				<button type="button" onClick={() => createTask(newTask)}>
-					create task
-				</button>
-				<button type="button" onClick={() => updateTask(editedTask)}>
-					edit task
-				</button>
-				<button type="button" onClick={() => deleteTask(newTask)}>
-					delete task
-				</button>
-			</Flex>
+			<Table data={_tasks} headers={headers} />
+
+			<Modal buttonText="Add new" modalTitle="Create a new issue" modalBody={renderModalBody()} />
 		</>
 	);
 };
