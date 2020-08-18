@@ -3,6 +3,17 @@ import { createGlobalStyle } from 'styled-components';
 // normalize.css
 
 export const GlobalStyle = createGlobalStyle`
+  @import url('https://fonts.googleapis.com/css2?family=Comfortaa&family=Roboto&display=swap');
+  @import url('react-quill/dist/quill.snow.css');
+
+  *{
+    font-family: 'Roboto', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Comfortaa', cursive;
+  }
+
   html {
     height: 100%;
     line-height: 1.15; 
@@ -149,4 +160,36 @@ export const GlobalStyle = createGlobalStyle`
   [hidden] {
     display: none;
   }
+
+  body {
+  background: #f3f1f2;
+  font-family: sans-serif;
+}
+
+.app {
+  margin: 1rem 4rem;
+}
+
+.app .ql-container {
+  background: #fefcfc;
+}
+
+/* Snow Theme */
+.app .ql-snow.ql-toolbar {
+  display: block;
+  background: #eaecec;
+}
+
+/* Bubble Theme */
+.app .ql-bubble .ql-editor {
+  border: 1px solid #ccc;
+}
+
+.app .ql-editor {
+  min-height: 18em;
+}
+
+.themeSwitcher {
+  font-size: small;
+}
 `;
