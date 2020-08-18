@@ -27,7 +27,8 @@ export interface IRegisterProps {
 
 export interface IUserState {
 	authToken: string | null;
-	loginFailed: boolean;
+	error: string | null;
+	loading: boolean;
 	userId: string;
 }
 

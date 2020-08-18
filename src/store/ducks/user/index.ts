@@ -8,7 +8,8 @@ import storage from '@/utils/storage';
 
 const initialState: IUserState = {
 	authToken: null,
-	loginFailed: false,
+	error: null,
+	loading: false,
 	userId: ''
 };
 
@@ -19,10 +20,8 @@ const slice = createSlice({
 	reducers: {
 		login: (state, action) => ({ ...state, authToken: action.payload.token }),
 		logout: state => ({ ...state, authToken: null }),
-		loginFailed: (state, action) => {
-			console.log(action.payload);
-			return { ...state, loginFailed: true };
-		}
+		setError: (state, action) => ({ ...state, error: action.payload }),
+		setLoading: (state, action) => ({ ...state, loading: action.payload })
 	}
 });
 

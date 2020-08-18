@@ -9,6 +9,7 @@ import { IAuthProps } from './user.types';
 import { setAuthHeader, deleteAuthHeader } from '@/services/api/axios';
 
 export const loginAction = (params: IAuthProps): ThunkA => dispatch => {
+	dispatch(user.actions.setLoading(true));
 	api.user
 		.authenticateUser(params)
 		.then((res: AxiosResponse) => {
@@ -16,7 +17,8 @@ export const loginAction = (params: IAuthProps): ThunkA => dispatch => {
 			setAuthHeader(res.data.token);
 			dispatch(user.actions.login(res.data));
 		})
-		.catch(err => user.actions.loginFailed(err));
+		.catch(err => user.actions.setError(err))
+		.finally(() => dispatch(user.actions.setLoading(false)));
 };
 
 export const logoutAction = (): ThunkA => dispatch => {
