@@ -1,5 +1,7 @@
 import api from '@/services/api';
 import tasks from '.';
+import PDF from '@/utils/pdfGenerator';
+import uuid from 'react-uuid';
 
 export const getTasksAction = () => dispatch => {
 	dispatch(tasks.actions.setLoading(true));
@@ -10,7 +12,10 @@ export const getTasksAction = () => dispatch => {
 		.finally(() => dispatch(tasks.actions.setLoading(false)));
 };
 
-export const createTaskAction = (props: ITask) => dispatch => dispatch(tasks.actions.createTask(props));
+export const createTaskAction = (props: ITask) => dispatch => {
+	const link = PDF(props);
+	dispatch(tasks.actions.createTask({ ...props, link, id: uuid() }));
+};
 
 export const updateTaskAction = (props: ITask) => dispatch => dispatch(tasks.actions.updateTask(props));
 
