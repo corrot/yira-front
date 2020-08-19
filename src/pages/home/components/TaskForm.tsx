@@ -7,6 +7,8 @@ import DraggableList from '@/components/library/draggableList';
 import arrayMutators from 'final-form-arrays';
 import { FieldArray } from 'react-final-form-arrays';
 import { Flex } from '@/styled/flex';
+import { tasksSelector } from '@/store/ducks/tasks';
+import { useSelector } from 'react-redux';
 
 interface FormData {
 	hello: string;
@@ -14,12 +16,12 @@ interface FormData {
 }
 
 interface IFormProps {
-	initialValues: FormData;
-	submitAction: () => void;
-	DateFnsUtils: dateFns;
+	initialValues?: FormData;
+	submitAction: (props: any) => void;
+	DateFnsUtils?: dateFns | null;
 }
 
-const TaskForm = ({ initialValues, DateFnsUtils, submitAction }: IFormProps) => {
+const TaskForm = ({ initialValues, DateFnsUtils = null, submitAction }: IFormProps) => {
 	const onSubmit = async (values: FormData) => {
 		submitAction(values);
 	};

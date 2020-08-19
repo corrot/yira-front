@@ -26,7 +26,7 @@ export const ModalComponent = ({ buttonText, modalTitle, modalBody }: IModalProp
 
 	return (
 		<>
-			<Button type="button" onClick={handleOpen}>
+			<Button type="button" onClick={handleOpen} color="primary">
 				{buttonText}
 			</Button>
 			<Dialog

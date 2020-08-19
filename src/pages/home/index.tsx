@@ -7,11 +7,13 @@ import useApi from '@/hooks/useApi';
 import { useSelector, useDispatch } from 'react-redux';
 import { tasksSelector, tasksAction } from '@/store/ducks/tasks';
 
-import Table from '@/components/library/table';
 import Modal from '@/components/library/modal';
 import TaskForm from './components/TaskForm';
 import { subMilliseconds } from 'date-fns';
 import { StylesProvider } from '@material-ui/core';
+
+import Table from '@/components/library/table';
+import AddIcon from '@material-ui/icons/Add';
 
 export const Home = () => {
 	const { t } = useTranslation();
@@ -40,9 +42,6 @@ export const Home = () => {
 	const createTask = props => {
 		dispatch(tasksAction.createTaskAction(props));
 	};
-	const updateTask = props => {
-		dispatch(tasksAction.updateTaskAction(props));
-	};
 	const deleteTask = props => {
 		dispatch(tasksAction.deleteTaskAction(props));
 	};
@@ -52,21 +51,33 @@ export const Home = () => {
 	}, []);
 
 	const headers = [
-		{ selector: 'id', title: '#' },
+		// { selector: 'id', title: '#' },
 		{ selector: 'title', title: 'Title' },
+		{ selector: 'reporter', title: 'Reporter' },
 		{ selector: 'dueDate', title: 'Due Date' },
 		{ selector: 'createDate', title: 'Creation Date' },
 		{ selector: 'isResolved', title: 'Status' },
-		{ selector: 'description', title: 'Description' }
+		// { selector: 'description', title: 'Description' },
+		{ selector: 'actions', title: '' }
 	];
 
 	const renderModalBody = () => <TaskForm submitAction={createTask} />;
 
+	const createTaskModal = () => (
+		<Modal
+			buttonText={
+				<div style={{ display: 'flex', fontSize: '18px', lineHeight: '28px' }}>
+					<AddIcon /> <div>add</div>
+				</div>
+			}
+			modalTitle="Create a new issue"
+			modalBody={renderModalBody()}
+		/>
+	);
+
 	return (
 		<>
-			<Table data={_tasks} headers={headers} />
-
-			<Modal buttonText="Add new" modalTitle="Create a new issue" modalBody={renderModalBody()} />
+			<Table data={_tasks} headers={headers} createTaskModal={createTaskModal} />
 		</>
 	);
 };
