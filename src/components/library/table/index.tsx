@@ -1,66 +1,367 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import clsx from 'clsx';
+import { createStyles, lighten, makeStyles, Theme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
+import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
+import TableSortLabel from '@material-ui/core/TableSortLabel';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
+import Checkbox from '@material-ui/core/Checkbox';
+import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@material-ui/core/Tooltip';
+import TaskForm from '@/pages/home/components/TaskForm';
+import Modal from '@/components/library/modal';
+import { useDispatch } from 'react-redux';
+import { tasksAction } from '@/store/ducks/tasks';
+import DeleteIcon from '@material-ui/icons/Delete';
+import EditIcon from '@material-ui/icons/Edit';
+import { TextField } from '@material-ui/core';
+import { ITask } from '@/store/ducks/tasks/tasks.types';
 
-const useStyles = makeStyles({
-	table: {
-		minWidth: 650
+const useStyles = makeStyles((theme: Theme) =>
+	createStyles({
+		root: {
+			width: '100%'
+		},
+		paper: {
+			width: '100%',
+			marginBottom: theme.spacing(2)
+		},
+		table: {
+			minWidth: 750
+		},
+		visuallyHidden: {
+			border: 0,
+			clip: 'rect(0 0 0 0)',
+			height: 1,
+			margin: -1,
+			overflow: 'hidden',
+			padding: 0,
+			position: 'absolute',
+			top: 20,
+			width: 1
+		}
+	})
+);
+
+function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
+	if (b[orderBy] < a[orderBy]) {
+		return -1;
 	}
-});
+	if (b[orderBy] > a[orderBy]) {
+		return 1;
+	}
+	return 0;
+}
 
-const TableComponent = ({ data, headers }) => {
-	const classes = useStyles();
+type Order = 'asc' | 'desc';
 
-	const tasks = data?.map(({
-		id,
-		title,
-		dueDate,
-		createDate,
-		isResolved,
-		description,
-		steps
-	}) => ({
-		id,
-		title,
-		dueDate: dueDate?.toString(),
-		createDate
-		isResolved,
-		description,
-		steps: steps?.map(<div>{JSON.stringify(step)}</div>)
-	}))
+function getComparator<Key extends keyof any>(
+	order: Order,
+	orderBy: Key
+): (a: { [key in Key]: number | string }, b: { [key in Key]: number | string }) => number {
+	return order === 'desc'
+		? (a, b) => descendingComparator(a, b, orderBy)
+		: (a, b) => -descendingComparator(a, b, orderBy);
+}
+
+function stableSort<T>(array: T[], comparator: (a: T, b: T) => number) {
+	const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
+	stabilizedThis.sort((a, b) => {
+		const order = comparator(a[0], b[0]);
+		if (order !== 0) return order;
+		return a[1] - b[1];
+	});
+	return stabilizedThis.map(el => el[0]);
+}
+
+interface EnhancedTableProps {
+	classes: ReturnType<typeof useStyles>;
+	numSelected: number;
+	onRequestSort: (event: React.MouseEvent<unknown>, property: keyof ITask) => void;
+	onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
+	order: Order;
+	orderBy: string;
+	rowCount: number;
+	headers: [any];
+}
+
+function EnhancedTableHead(props: EnhancedTableProps) {
+	const { classes, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, headers } = props;
+	const createSortHandler = (property: keyof ITask) => (event: React.MouseEvent<unknown>) => {
+		onRequestSort(event, property);
+	};
 
 	return (
-		<TableContainer component={Paper}>
-			<Table className={classes.table} aria-label="simple table">
-				<TableHead>
-					<TableRow>
-						{headers.map(o => (
-							<TableCell align="right" key={o.selector}>
-								{o.title}
-							</TableCell>
-						))}
-					</TableRow>
-				</TableHead>
-				<TableBody>
-					{tasks.map(row => (
-						<TableRow key={row.id}>
-							{headers.map(header => (
-								<TableCell component="th" scope="row" key={row[header.selector]}>
-									{row[header.selector]}
-								</TableCell>
-							))}
-						</TableRow>
-					))}
-				</TableBody>
-			</Table>
-		</TableContainer>
+		<TableHead>
+			<TableRow>
+				<TableCell padding="checkbox">
+					<Checkbox
+						indeterminate={numSelected > 0 && numSelected < rowCount}
+						checked={rowCount > 0 && numSelected === rowCount}
+						onChange={onSelectAllClick}
+						inputProps={{ 'aria-label': 'select all desserts' }}
+					/>
+				</TableCell>
+				{headers.map(headCell => (
+					<TableCell
+						key={headCell.selector}
+						align={headCell.numeric ? 'right' : 'left'}
+						padding={headCell.disablePadding ? 'none' : 'default'}
+						sortDirection={orderBy === headCell.id ? order : false}
+					>
+						<TableSortLabel
+							active={orderBy === headCell.selector}
+							direction={orderBy === headCell.selector ? order : 'asc'}
+							onClick={createSortHandler(headCell.selector)}
+						>
+							<span style={{ fontWeight: 'bold', fontSize: '16px' }}>{headCell.title}</span>
+							{orderBy === headCell.selector ? (
+								<span className={classes.visuallyHidden}>
+									{order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+								</span>
+							) : null}
+						</TableSortLabel>
+					</TableCell>
+				))}
+			</TableRow>
+		</TableHead>
+	);
+}
+
+const useToolbarStyles = makeStyles((theme: Theme) =>
+	createStyles({
+		root: {
+			paddingLeft: theme.spacing(2),
+			paddingRight: theme.spacing(1)
+		},
+		highlight:
+			theme.palette.type === 'light'
+				? {
+						color: theme.palette.secondary.main,
+						backgroundColor: lighten(theme.palette.secondary.light, 0.85)
+				  }
+				: {
+						color: theme.palette.text.primary,
+						backgroundColor: theme.palette.secondary.dark
+				  },
+		title: {
+			flex: '1 1 100%'
+		}
+	})
+);
+
+interface EnhancedTableToolbarProps {
+	numSelected: number;
+	createTaskModal: () => JSX.Element;
+	setFilter: () => any;
+}
+
+const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
+	const classes = useToolbarStyles();
+	const { numSelected, createTaskModal, setFilter } = props;
+
+	const searchInput = () => <TextField id="standard-basic" label="Search" onChange={e => setFilter(e.target.value)} />;
+
+	return (
+		<Toolbar
+			className={clsx(classes.root, {
+				[classes.highlight]: numSelected > 0
+			})}
+		>
+			{numSelected > 0 ? (
+				<Typography className={classes.title} color="inherit" variant="subtitle1" component="div">
+					{numSelected} selected
+				</Typography>
+			) : (
+				<div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', paddingRight: '16px' }}>
+					<Typography className={classes.title} variant="h6" id="tableTitle" component="div">
+						Tasks
+					</Typography>
+					{searchInput()}
+					{createTaskModal()}
+				</div>
+			)}
+			{numSelected > 0 && (
+				<Tooltip title="Delete">
+					<IconButton aria-label="delete">
+						<DeleteIcon />
+					</IconButton>
+				</Tooltip>
+			)}
+		</Toolbar>
 	);
 };
 
-export default TableComponent;
+export default function EnhancedTable({ data, headers, createTaskModal }) {
+	const classes = useStyles();
+	const [order, setOrder] = React.useState<Order>('asc');
+	const [orderBy, setOrderBy] = React.useState<keyof ITask>('id');
+	const [selected, setSelected] = React.useState<string[]>([]);
+	const [page, setPage] = React.useState(0);
+	const [rowsPerPage, setRowsPerPage] = React.useState(5);
+
+	const dispatch = useDispatch();
+
+	const updateTask = (props: ITask) => {
+		dispatch(tasksAction.updateTaskAction(props));
+	};
+
+	const tasks = data?.map(({ id, title, dueDate, createDate, isResolved, description, steps, link }: ITask) => ({
+		id,
+		title,
+		dueDate: dueDate?.toString(),
+		createDate,
+		isResolved: isResolved ? (
+			<div style={{ color: 'green' }}>Resolved</div>
+		) : (
+			<div style={{ color: 'red' }}>Not Resolved</div>
+		),
+		description,
+		steps: steps?.map(step => <div key={step}>{JSON.stringify(step)}</div>),
+		actions: (
+			<div style={{ display: 'flex' }}>
+				<Modal
+					buttonText={
+						<Tooltip title="Edit">
+							<EditIcon />
+						</Tooltip>
+					}
+					modalTitle={`Edit ${title}`}
+					modalBody={<TaskForm submitAction={updateTask} initialValues={data.find((o: ITask) => o.id === id)} />}
+				/>
+				{link}
+				{/* <Link to={link} target="_blank" style={{ pointerEvents: !link && 'none' }}>
+					<Button disabled={!link} type="button" color="primary">
+						<Tooltip title="Download">
+							<DownloadIcon />
+						</Tooltip>
+					</Button>
+				</Link> */}
+			</div>
+		)
+	}));
+
+	const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof ITask) => {
+		const isAsc = orderBy === property && order === 'asc';
+		setOrder(isAsc ? 'desc' : 'asc');
+		setOrderBy(property);
+	};
+
+	const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
+		if (event.target.checked) {
+			const newSelecteds = tasks.map(n => n.id);
+			setSelected(newSelecteds);
+			return;
+		}
+		setSelected([]);
+	};
+
+	const handleClick = (event: React.MouseEvent<unknown>, id: string) => {
+		const selectedIndex = selected.indexOf(id);
+		let newSelected: string[] = [];
+
+		if (selectedIndex === -1) {
+			newSelected = newSelected.concat(selected, id);
+		} else if (selectedIndex === 0) {
+			newSelected = newSelected.concat(selected.slice(1));
+		} else if (selectedIndex === selected.length - 1) {
+			newSelected = newSelected.concat(selected.slice(0, -1));
+		} else if (selectedIndex > 0) {
+			newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
+		}
+
+		setSelected(newSelected);
+	};
+
+	const handleChangePage = (event: unknown, newPage: number) => {
+		setPage(newPage);
+	};
+
+	const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setRowsPerPage(parseInt(event.target.value, 10));
+		setPage(0);
+	};
+
+	const isSelected = (id: string) => selected.indexOf(id) !== -1;
+
+	const emptyRows = rowsPerPage - Math.min(rowsPerPage, tasks.length - page * rowsPerPage);
+
+	const [filterValue, setFilterValue] = React.useState<string>('');
+
+	return (
+		<div className={classes.root}>
+			<Paper className={classes.paper}>
+				<EnhancedTableToolbar
+					numSelected={selected.length}
+					createTaskModal={createTaskModal}
+					setFilter={setFilterValue}
+				/>
+				<TableContainer>
+					<Table className={classes.table} aria-labelledby="tableTitle" aria-label="enhanced table">
+						<EnhancedTableHead
+							classes={classes}
+							numSelected={selected.length}
+							order={order}
+							orderBy={orderBy}
+							onSelectAllClick={handleSelectAllClick}
+							onRequestSort={handleRequestSort}
+							rowCount={tasks.length}
+							headers={headers}
+						/>
+						<TableBody>
+							{stableSort(tasks, getComparator(order, orderBy))
+								.filter(o => (filterValue ? o.title.toLowerCase().includes(filterValue.toLowerCase()) : o.title))
+								.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+								.map((row, index) => {
+									const isItemSelected = isSelected(row.id);
+									const labelId = `enhanced-table-checkbox-${index}`;
+
+									return (
+										<TableRow
+											hover
+											onClick={event => handleClick(event, row.id)}
+											role="checkbox"
+											aria-checked={isItemSelected}
+											tabIndex={-1}
+											key={row.id}
+											selected={isItemSelected}
+										>
+											<TableCell padding="checkbox">
+												<Checkbox checked={isItemSelected} inputProps={{ 'aria-labelledby': labelId }} />
+											</TableCell>
+											{headers.map(header => (
+												<TableCell component="th" scope="row" key={row[header.selector]}>
+													{row[header.selector]}
+												</TableCell>
+											))}
+										</TableRow>
+									);
+								})}
+							{emptyRows > 0 && (
+								<TableRow style={{ height: 53 * emptyRows }}>
+									<TableCell colSpan={6} />
+								</TableRow>
+							)}
+						</TableBody>
+					</Table>
+				</TableContainer>
+				<TablePagination
+					rowsPerPageOptions={[5, 10, 25]}
+					component="div"
+					count={tasks.length}
+					rowsPerPage={rowsPerPage}
+					page={page}
+					onChangePage={handleChangePage}
+					onChangeRowsPerPage={handleChangeRowsPerPage}
+				/>
+			</Paper>
+		</div>
+	);
+}
