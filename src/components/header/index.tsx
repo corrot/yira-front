@@ -1,14 +1,11 @@
 import React, { memo, FC } from 'react';
-import { useTranslation } from 'react-i18next';
 
 import Button from '@/components/library/button';
 import { HeaderStyled } from './header-styled';
 import { logoutAction } from '@/store/ducks/user/user.actions';
 import { useDispatch } from 'react-redux';
 
-export const Header: FC<IOwnProps> = ({ changeTheme, isAuthenticated }) => {
-	const { i18n } = useTranslation();
-
+export const Header: FC<IOwnProps> = ({ isAuthenticated }) => {
 	const dispatch = useDispatch();
 
 	const handleLogout = () => {
@@ -17,17 +14,8 @@ export const Header: FC<IOwnProps> = ({ changeTheme, isAuthenticated }) => {
 
 	return (
 		<HeaderStyled>
-			<span>HEADER</span>
-			<div>
-				<Button onClick={changeTheme}>DARK MODE</Button>
-				<Button active={i18n.language === 'en-US'} onClick={() => i18n.changeLanguage('en-US')}>
-					EN
-				</Button>
-				<Button active={i18n.language === 'ka'} onClick={() => i18n.changeLanguage('ka')}>
-					KA
-				</Button>
-				{isAuthenticated && <Button onClick={handleLogout}>Log out</Button>}
-			</div>
+			<h2>Yira service desk</h2>
+			<div>{isAuthenticated && <Button onClick={handleLogout}>Log out</Button>}</div>
 		</HeaderStyled>
 	);
 };
